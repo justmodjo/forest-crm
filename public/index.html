@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForestCRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f0a;
+  --bg2: #111811;
+  --bg3: #182018;
+  --border: #2a3d2a;
+  --green: #4a7c4a;
+  --green-vivid: #8ddf8d;
+  --green-light: rgba(141,223,141,0.12);
+  --amber: #d4a847;
+  --red: #c45c5c;
+  --text: #d4e8d4;
+  --text-muted: #7a9a7a;
+  --sidebar-w: 220px;
+  --radius: 12px;
+  --transition: 0.2s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Syne',sans-serif}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:'DM Sans',sans-serif}
+input,select,textarea{font-family:'DM Sans',sans-serif}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:100;transition:var(--transition)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── SIDEBAR ── */
+.sidebar-logo{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--green),var(--green-vivid));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--green-vivid);letter-spacing:-0.5px}
+.logo-sub{font-size:10px;color:var(--text-muted);margin-top:1px}
+
+.sidebar-nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:var(--transition);position:relative;font-size:14px;font-weight:500;color:var(--text-muted)}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--green-light);color:var(--green-vivid)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:25%;height:50%;width:3px;background:var(--green-vivid);border-radius:0 2px 2px 0}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;font-family:'DM Sans',sans-serif}
+.nav-badge.amber{background:var(--amber);color:#000}
+.nav-badge.red{background:var(--red)}
+
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border)}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:var(--transition)}
+.sidebar-user:hover{background:var(--bg3)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--green),#2d5a2d);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:11px;color:var(--text-muted)}
+
+/* ── TOPBAR ── */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted)}
+.breadcrumb span{color:var(--text-muted)}
+.breadcrumb b{color:var(--text);font-weight:600}
+.topbar-search{flex:1;max-width:360px;position:relative}
+.topbar-search input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 12px 7px 34px;font-size:13px;color:var(--text);outline:none;transition:var(--transition)}
+.topbar-search input:focus{border-color:var(--green);background:var(--bg)}
+.topbar-search .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.conn-indicator{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--green-vivid);animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;border:none;transition:var(--transition);cursor:pointer}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:#3d6b3d;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--green);color:var(--green-vivid);background:var(--green-light)}
+.btn-ghost{background:transparent;border:none;color:var(--text-muted);padding:6px 10px}
+.btn-ghost:hover{color:var(--text);background:var(--bg3)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:var(--red);color:#fff}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:var(--transition)}
+.card:hover{border-color:var(--green)}
+.card-sm{padding:14px 16px}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;transition:var(--transition)}
+.stat-card:hover{border-color:var(--green);transform:translateY(-2px)}
+.stat-label{font-size:12px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--text);line-height:1}
+.stat-val.green{color:var(--green-vivid)}
+.stat-val.amber{color:var(--amber)}
+.stat-val.red{color:var(--red)}
+.stat-delta{font-size:12px;color:var(--text-muted);margin-top:6px}
+.stat-icon{font-size:20px;margin-bottom:8px}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--bg3);padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{color:var(--green-vivid)}
+tbody tr{border-top:1px solid var(--border);transition:var(--transition);cursor:pointer}
+tbody tr:hover{background:var(--bg3)}
+td{padding:12px 16px;font-size:13px;vertical-align:middle}
+.td-name{font-weight:600;color:var(--text)}
+.td-muted{color:var(--text-muted);font-size:12px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-green{background:rgba(141,223,141,.15);color:var(--green-vivid);border:1px solid rgba(141,223,141,.3)}
+.badge-amber{background:rgba(212,168,71,.15);color:var(--amber);border:1px solid rgba(212,168,71,.3)}
+.badge-red{background:rgba(196,92,92,.15);color:var(--red);border:1px solid rgba(196,92,92,.3)}
+.badge-blue{background:rgba(100,160,220,.15);color:#78b4e0;border:1px solid rgba(100,160,220,.3)}
+.badge-muted{background:var(--bg3);color:var(--text-muted);border:1px solid var(--border)}
+.badge-purple{background:rgba(180,100,200,.15);color:#c878e0;border:1px solid rgba(180,100,200,.3)}
+
+/* ── PROGRESS ── */
+.progress-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s ease;background:linear-gradient(90deg,var(--green),var(--green-vivid))}
+.progress-fill.amber{background:linear-gradient(90deg,#a07820,var(--amber))}
+.progress-fill.red{background:linear-gradient(90deg,#8b3030,var(--red))}
+
+/* ── FILTERS ── */
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.filter-bar select,.filter-bar input{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;color:var(--text);outline:none;transition:var(--transition);cursor:pointer}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--green)}
+.filter-bar select option{background:var(--bg2)}
+.filter-spacer{flex:1}
+
+/* ── DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;opacity:0;visibility:hidden;transition:var(--transition);backdrop-filter:blur(2px)}
+.drawer-overlay.open{opacity:1;visibility:visible}
+.drawer{position:fixed;right:0;top:0;height:100%;width:520px;max-width:100vw;background:var(--bg2);border-left:1px solid var(--border);z-index:201;transform:translateX(100%);transition:.3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawer-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.drawer-back{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;border-radius:6px;transition:var(--transition);font-size:16px}
+.drawer-back:hover{color:var(--text);background:var(--bg3)}
+.drawer-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;flex:1}
+.drawer-body{flex:1;overflow-y:auto;padding:24px}
+.drawer-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+
+/* ── FORM ── */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;color:var(--text);outline:none;transition:var(--transition)}
+.form-input:focus{border-color:var(--green);background:var(--bg)}
+.form-input::placeholder{color:var(--text-muted)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-textarea{resize:vertical;min-height:80px}
+
+/* ── SECTION HEADER ── */
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.section-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)}
+.section-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+.section-actions{margin-left:auto;display:flex;gap:8px}
+
+/* ── ALERT BANNER ── */
+.alert-banner{background:rgba(212,168,71,.1);border:1px solid rgba(212,168,71,.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--amber)}
+.alert-banner.red{background:rgba(196,92,92,.1);border-color:rgba(196,92,92,.3);color:var(--red)}
+
+/* ── PIPELINE KANBAN ── */
+.kanban{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;min-height:calc(100vh - 180px)}
+.kanban-col{flex:0 0 240px;display:flex;flex-direction:column;gap:10px}
+.kanban-header{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;position:sticky;top:0}
+.kanban-col-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.kanban-meta{display:flex;align-items:center;gap:6px}
+.kanban-count{font-size:12px;color:var(--text-muted)}
+.kanban-ca{font-size:12px;color:var(--green-vivid);font-weight:600;margin-left:auto}
+.kanban-cards{display:flex;flex-direction:column;gap:8px;flex:1}
+.kanban-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:var(--transition);user-select:none}
+.kanban-card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:0 4px 12px rgba(74,124,74,.2)}
+.kanban-card.dragging{opacity:.5;transform:rotate(2deg)}
+.kanban-card-name{font-weight:600;font-size:13px;margin-bottom:6px}
+.kanban-card-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.kanban-card-meta span{font-size:11px;color:var(--text-muted);background:var(--bg3);padding:2px 7px;border-radius:4px}
+.kanban-card-bottom{display:flex;align-items:center;justify-content:space-between}
+.kanban-card-score{display:flex;gap:2px}
+.kanban-star{font-size:10px;color:var(--border)}
+.kanban-star.active{color:var(--amber)}
+.kanban-drop-zone{border:2px dashed var(--border);border-radius:10px;min-height:60px;transition:var(--transition);display:flex;align-items:center;justify-content:center}
+.kanban-drop-zone.drag-over{border-color:var(--green-vivid);background:var(--green-light)}
+.kanban-drop-zone-text{font-size:12px;color:var(--text-muted)}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.timeline-item{display:flex;gap:14px;position:relative;padding-bottom:20px}
+.timeline-item:last-child{padding-bottom:0}
+.timeline-item:last-child .timeline-line{display:none}
+.timeline-side{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px}
+.timeline-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:2px solid var(--border)}
+.timeline-dot.appel{background:rgba(141,223,141,.15);border-color:var(--green)}
+.timeline-dot.email{background:rgba(100,160,220,.15);border-color:#78b4e0}
+.timeline-dot.visite{background:rgba(212,168,71,.15);border-color:var(--amber)}
+.timeline-dot.devis{background:rgba(180,100,200,.15);border-color:#c878e0}
+.timeline-dot.contrat{background:rgba(141,223,141,.3);border-color:var(--green-vivid)}
+.timeline-dot.relance{background:rgba(196,92,92,.15);border-color:var(--red)}
+.timeline-dot.note{background:var(--bg3);border-color:var(--border)}
+.timeline-line{flex:1;width:1px;background:var(--border);margin:4px auto 0}
+.timeline-content{flex:1;padding-bottom:4px}
+.timeline-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.timeline-title{font-weight:600;font-size:13px}
+.timeline-date{font-size:11px;color:var(--text-muted);margin-left:auto}
+.timeline-desc{font-size:12px;color:var(--text-muted);line-height:1.5}
+.timeline-meta{display:flex;gap:6px;margin-top:6px}
+
+/* ── CHART SVG ── */
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+.chart-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:16px}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+.chart-bar-col{flex:1;display:flex;align-items:flex-end;width:100%}
+.chart-bar{width:100%;background:linear-gradient(180deg,var(--green-vivid),var(--green));border-radius:4px 4px 0 0;transition:height .6s cubic-bezier(.4,0,.2,1);min-height:4px;cursor:pointer}
+.chart-bar:hover{background:linear-gradient(180deg,#a8f0a8,var(--green-vivid))}
+.chart-bar-label{font-size:10px;color:var(--text-muted);text-align:center}
+.chart-bar-val{font-size:10px;color:var(--text-muted);text-align:center}
+
+/* ── MAP SVG (schematic) ── */
+.map-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+.map-legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.map-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)}
+.map-legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* ── ÉQUIPE CARDS ── */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+.team-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:var(--transition);cursor:pointer}
+.team-card:hover{border-color:var(--green);transform:translateY(-2px)}
+.team-card-header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.team-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.team-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+.team-region{font-size:12px;color:var(--text-muted)}
+.team-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.team-stat{text-align:center}
+.team-stat-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
+.team-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px}
+.podium{display:flex;align-items:flex-end;gap:8px;justify-content:center;padding:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px}
+.podium-item{text-align:center;flex:1}
+.podium-rank{font-size:20px;margin-bottom:4px}
+.podium-bar{margin:0 auto;border-radius:6px 6px 0 0;background:var(--bg3);border:1px solid var(--border)}
+.podium-name{font-size:11px;color:var(--text-muted);margin-top:4px;font-weight:600}
+.podium-val{font-size:11px;color:var(--green-vivid)}
+
+/* ── SKELETON ── */
+.skeleton{animation:shimmer 1.5s infinite;background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-line{height:14px;margin-bottom:8px;border-radius:4px}
+.skel-card{height:80px;border-radius:var(--radius);margin-bottom:12px}
+
+/* ── TOAST ── */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;pointer-events:all;animation:slide-in .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);max-width:320px}
+.toast.success{background:#1a3a1a;border:1px solid var(--green);color:var(--green-vivid)}
+.toast.error{background:#3a1a1a;border:1px solid var(--red);color:var(--red)}
+.toast.info{background:#1a2a3a;border:1px solid #78b4e0;color:#78b4e0}
+.toast-icon{font-size:16px;flex-shrink:0}
+@keyframes slide-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slide-out{to{transform:translateX(120%);opacity:0}}
+
+/* ── EMPTY STATE ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:.6}
+.empty-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--text-muted);max-width:280px;line-height:1.6}
+
+/* ── DETAILS SECTIONS ── */
+.detail-section{margin-bottom:20px}
+.detail-section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.detail-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.detail-item-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.detail-item-val{font-size:14px;font-weight:600;color:var(--text)}
+
+/* ── MOBILE ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding:8px 0 env(safe-area-inset-bottom)}
+.mobile-nav-items{display:flex;justify-content:space-around}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;cursor:pointer;color:var(--text-muted);transition:var(--transition);font-size:10px;font-weight:600}
+.mobile-nav-item.active{color:var(--green-vivid)}
+.mobile-nav-icon{font-size:20px}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .mobile-nav{display:block}
+  .content{padding:16px;padding-bottom:80px}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .kanban{gap:10px}
+  .kanban-col{flex:0 0 200px}
+  .team-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .drawer{width:100vw}
+  .topbar{padding:0 16px}
+  .topbar-search{max-width:180px}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .stat-val{font-size:22px}
+}
+
+/* ── CHANTIER PROGRESS ROW ── */
+.progress-row{display:flex;align-items:center;gap:10px}
+.progress-row .progress-bar{flex:1}
+.progress-pct{font-size:12px;font-weight:700;color:var(--text-muted);width:32px;text-align:right;flex-shrink:0}
+
+/* ── SECTION FADE ── */
+.section-view{display:none;animation:fadeIn .3s ease}
+.section-view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SCORE STARS ── */
+.stars{display:inline-flex;gap:2px}
+.star{font-size:12px;color:var(--border)}
+.star.lit{color:var(--amber)}
+
+/* ── PIPELINE STATUS COLORS ── */
+.kanban-col[data-col="à_contacter"] .kanban-header{border-left:3px solid var(--text-muted)}
+.kanban-col[data-col="qualifié"] .kanban-header{border-left:3px solid #78b4e0}
+.kanban-col[data-col="devis_envoyé"] .kanban-header{border-left:3px solid var(--amber)}
+.kanban-col[data-col="négociation"] .kanban-header{border-left:3px solid var(--green-vivid)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">🌲</div>
+        <div>
+          <div class="logo-text">ForestCRM</div>
+          <div class="logo-sub">Gestion forestière</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <div class="nav-item active" data-section="dashboard">
+        <span class="nav-icon">📊</span> Tableau de bord
+      </div>
+      <div class="nav-item" data-section="prospects">
+        <span class="nav-icon">🌳</span> Prospects
+        <span class="nav-badge" id="badge-prospects">15</span>
+      </div>
+      <div class="nav-item" data-section="pipeline">
+        <span class="nav-icon">📈</span> Pipeline
+      </div>
+      <div class="nav-item" data-section="chantiers">
+        <span class="nav-icon">🪓</span> Chantiers
+        <span class="nav-badge amber" id="badge-chantiers">5</span>
+      </div>
+      <div class="nav-item" data-section="activites">
+        <span class="nav-icon">📋</span> Activités
+      </div>
+      <div class="nav-item" data-section="equipe">
+        <span class="nav-icon">👥</span> Équipe
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">AD</div>
+        <div class="user-info">
+          <div class="user-name">Admin ForestCRM</div>
+          <div class="user-role">Gestionnaire</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumb">
+        <span>ForestCRM</span>
+        <span>›</span>
+        <b id="breadcrumb-current">Tableau de bord</b>
+      </div>
+      <div class="topbar-search">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="global-search" placeholder="Rechercher..." oninput="globalSearch(this.value)">
+      </div>
+      <div class="topbar-actions">
+        <div class="conn-indicator">
+          <div class="conn-dot"></div>
+          <span>Connecté</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div class="section-view active" id="section-dashboard">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Tableau de bord</div>
+            <div class="section-sub">Vue d'ensemble en temps réel</div>
+          </div>
+        </div>
+        <div id="dashboard-alerts"></div>
+        <div class="stat-grid" id="stat-grid">
+          <div class="skeleton skel-card"></div><div class="skeleton skel-card"></div>
+          <div class="skeleton skel-card"></div><div class="skeleton skel-card"></div>
+          <div class="skeleton skel-card"></div><div class="skeleton skel-card"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="chart-wrap" id="chart-ca">
+            <div class="chart-title">CA 6 derniers mois</div>
+            <div class="chart-bars" id="chart-bars"></div>
+          </div>
+          <div class="card" id="objectifs-wrap">
+            <div class="chart-title">Objectifs commerciaux</div>
+            <div id="objectifs-list" style="margin-top:8px"></div>
+          </div>
+        </div>
+        <div class="card" id="recent-activity">
+          <div class="chart-title" style="margin-bottom:16px">Activité récente</div>
+          <div id="recent-list"></div>
+        </div>
+      </div>
+
+      <!-- PROSPECTS -->
+      <div class="section-view" id="section-prospects">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Prospects</div>
+            <div class="section-sub" id="prospects-count">Chargement…</div>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-primary" onclick="openNewProspectDrawer()">+ Nouveau prospect</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <select id="f-statut" onchange="filterProspects()">
+            <option value="">Tous statuts</option>
+            <option value="à_contacter">À contacter</option>
+            <option value="qualifié">Qualifié</option>
+            <option value="devis_envoyé">Devis envoyé</option>
+            <option value="négociation">Négociation</option>
+            <option value="gagné">Gagné</option>
+            <option value="perdu">Perdu</option>
+          </select>
+          <select id="f-type" onchange="filterProspects()">
+            <option value="">Tous types</option>
+            <option value="privé">Privé</option>
+            <option value="GFA">GFA</option>
+            <option value="ONF">ONF</option>
+            <option value="collectivité">Collectivité</option>
+            <option value="SCI">SCI</option>
+            <option value="coopérative">Coopérative</option>
+          </select>
+          <select id="f-commercial" onchange="filterProspects()">
+            <option value="">Tous commerciaux</option>
+          </select>
+          <select id="f-dept" onchange="filterProspects()">
+            <option value="">Tous dépts</option>
+          </select>
+          <span class="filter-spacer"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortTable('prospects','nom')">Nom ↕</th>
+                <th onclick="sortTable('prospects','type')">Type ↕</th>
+                <th onclick="sortTable('prospects','departement')">Dép. ↕</th>
+                <th onclick="sortTable('prospects','surface_ha')">Surface ↕</th>
+                <th onclick="sortTable('prospects','statut')">Statut ↕</th>
+                <th>Score</th>
+                <th>Commercial</th>
+              </tr>
+            </thead>
+            <tbody id="prospects-tbody">
+              <tr><td colspan="7"><div class="skeleton skel-line" style="margin:8px 0"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PIPELINE -->
+      <div class="section-view" id="section-pipeline">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Pipeline commercial</div>
+            <div class="section-sub">Drag & drop pour changer de statut</div>
+          </div>
+        </div>
+        <div class="kanban" id="kanban-board"></div>
+      </div>
+
+      <!-- CHANTIERS -->
+      <div class="section-view" id="section-chantiers">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Chantiers</div>
+            <div class="section-sub" id="chantiers-count">Chargement…</div>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-primary" onclick="openNewChantierDrawer()">+ Nouveau chantier</button>
+          </div>
+        </div>
+        <div id="map-section" class="map-wrap">
+          <div class="chart-title">Carte des chantiers</div>
+          <div id="map-svg-wrap"></div>
+          <div class="map-legend">
+            <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--green-vivid)"></div>En cours</div>
+            <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--amber)"></div>Démarrage</div>
+            <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--red)"></div>Retard</div>
+            <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--text-muted)"></div>Planifié</div>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <select id="fc-statut" onchange="filterChantiers()">
+            <option value="">Tous statuts</option>
+            <option value="planifié">Planifié</option>
+            <option value="démarrage">Démarrage</option>
+            <option value="en_cours">En cours</option>
+            <option value="finalisation">Finalisation</option>
+            <option value="terminé">Terminé</option>
+            <option value="retard">Retard</option>
+          </select>
+          <span class="filter-spacer"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chantier</th>
+                <th>Type</th>
+                <th>Surface</th>
+                <th>Montant HT</th>
+                <th>Statut</th>
+                <th>Avancement</th>
+                <th>Fin prévue</th>
+              </tr>
+            </thead>
+            <tbody id="chantiers-tbody">
+              <tr><td colspan="7"><div class="skeleton skel-line" style="margin:8px 0"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ACTIVITÉS -->
+      <div class="section-view" id="section-activites">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Activités</div>
+            <div class="section-sub">Historique de toutes les actions</div>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-primary" onclick="openNewActiviteDrawer()">+ Nouvelle activité</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <select id="fa-type" onchange="filterActivites()">
+            <option value="">Tous types</option>
+            <option value="appel">Appel</option>
+            <option value="email">Email</option>
+            <option value="visite">Visite</option>
+            <option value="devis">Devis</option>
+            <option value="contrat">Contrat</option>
+            <option value="relance">Relance</option>
+            <option value="note">Note</option>
+          </select>
+          <select id="fa-commercial" onchange="filterActivites()">
+            <option value="">Tous commerciaux</option>
+          </select>
+          <span class="filter-spacer"></span>
+        </div>
+        <div id="activites-timeline" class="timeline"></div>
+      </div>
+
+      <!-- ÉQUIPE -->
+      <div class="section-view" id="section-equipe">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Équipe commerciale</div>
+            <div class="section-sub">Performance du mois en cours</div>
+          </div>
+        </div>
+        <div class="podium" id="podium"></div>
+        <div class="team-grid" id="team-grid"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-items">
+    <div class="mobile-nav-item active" data-section="dashboard"><div class="mobile-nav-icon">📊</div>Accueil</div>
+    <div class="mobile-nav-item" data-section="prospects"><div class="mobile-nav-icon">🌳</div>Prospects</div>
+    <div class="mobile-nav-item" data-section="pipeline"><div class="mobile-nav-icon">📈</div>Pipeline</div>
+    <div class="mobile-nav-item" data-section="chantiers"><div class="mobile-nav-icon">🪓</div>Chantiers</div>
+    <div class="mobile-nav-item" data-section="equipe"><div class="mobile-nav-icon">👥</div>Équipe</div>
+  </div>
+</nav>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <button class="drawer-back" onclick="closeDrawer()">← Retour</button>
+    <div class="drawer-title" id="drawer-title">Détail</div>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer" id="drawer-footer"></div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+const state = {
+  section: 'dashboard',
+  prospects: [],
+  chantiers: [],
+  activites: [],
+  devis: [],
+  commerciaux: [],
+  stats: null,
+  pipeline: null,
+  sort: { field: 'nom', asc: true },
+  searchQuery: ''
+};
+
+// ════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════
+const fmt = n => n != null ? new Intl.NumberFormat('fr-FR').format(Math.round(n)) + ' €' : '–';
+const fmtDate = s => s ? new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '–';
+const fmtShort = s => s ? new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '–';
+
+function statutBadge(s) {
+  const map = {
+    'à_contacter': ['badge-muted','À contacter'],
+    'qualifié': ['badge-blue','Qualifié'],
+    'devis_envoyé': ['badge-amber','Devis envoyé'],
+    'négociation': ['badge-purple','Négociation'],
+    'gagné': ['badge-green','Gagné ✓'],
+    'perdu': ['badge-red','Perdu'],
+    'planifié': ['badge-muted','Planifié'],
+    'démarrage': ['badge-blue','Démarrage'],
+    'en_cours': ['badge-green','En cours'],
+    'finalisation': ['badge-amber','Finalisation'],
+    'terminé': ['badge-muted','Terminé'],
+    'retard': ['badge-red','Retard ⚠'],
+    'brouillon': ['badge-muted','Brouillon'],
+    'envoyé': ['badge-blue','Envoyé'],
+    'accepté': ['badge-green','Accepté'],
+    'refusé': ['badge-red','Refusé'],
+  };
+  const [cls, label] = map[s] || ['badge-muted', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function stars(n) {
+  return `<span class="stars">${[1,2,3,4,5].map(i=>`<span class="star ${i<=n?'lit':''}">★</span>`).join('')}</span>`;
+}
+
+function typeIcon(t) {
+  const m = {appel:'📞',email:'📧',visite:'🚗',devis:'📄',contrat:'✍️',relance:'🔔',note:'📝'};
+  return m[t] || '•';
+}
+
+function commercialName(c) {
+  if (!c) return '–';
+  if (typeof c === 'object') return c.prenom + ' ' + c.nom;
+  const found = state.commerciaux.find(x => x.id === c);
+  return found ? found.prenom + ' ' + found.nom : '–';
+}
+
+function avatarColor(initials) {
+  const colors = ['#2d6a4f','#1b4332','#40916c','#74c69d','#52796f','#354f52'];
+  let h = 0;
+  for (const c of initials) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+  return colors[Math.abs(h) % colors.length];
+}
+
+// ════════════════════════════════════════════════════════════
+// API
+// ════════════════════════════════════════════════════════════
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// ════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════
+function toast(msg, type = 'success') {
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]}</span> ${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'slide-out .3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, 3000);
+}
+
+// ════════════════════════════════════════════════════════════
+// DRAWER
+// ════════════════════════════════════════════════════════════
+function openDrawer(title, bodyHTML, footerHTML = '') {
+  document.getElementById('drawer-title').textContent = title;
+  document.getElementById('drawer-body').innerHTML = bodyHTML;
+  document.getElementById('drawer-footer').innerHTML = footerHTML;
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+// ════════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════════
+const sectionLabels = {
+  dashboard: 'Tableau de bord', prospects: 'Prospects', pipeline: 'Pipeline',
+  chantiers: 'Chantiers', activites: 'Activités', equipe: 'Équipe'
+};
+
+function navigateTo(section) {
+  state.section = section;
+  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.section === section);
+  });
+  document.querySelectorAll('.section-view').forEach(el => {
+    el.classList.toggle('active', el.id === `section-${section}`);
+  });
+  document.getElementById('breadcrumb-current').textContent = sectionLabels[section] || section;
+  loadSection(section);
+}
+
+document.querySelectorAll('.nav-item[data-section], .mobile-nav-item[data-section]').forEach(el => {
+  el.addEventListener('click', () => navigateTo(el.dataset.section));
+});
+
+async function loadSection(section) {
+  if (section === 'dashboard') await loadDashboard();
+  else if (section === 'prospects') await loadProspects();
+  else if (section === 'pipeline') await loadPipeline();
+  else if (section === 'chantiers') await loadChantiers();
+  else if (section === 'activites') await loadActivites();
+  else if (section === 'equipe') await loadEquipe();
+}
+
+// ════════════════════════════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════════════════════════════
+function globalSearch(q) {
+  state.searchQuery = q.toLowerCase();
+  if (state.section === 'prospects') renderProspectsTable();
+  else if (state.section === 'chantiers') renderChantiersTable();
+  else if (state.section === 'activites') renderActivitesTimeline();
+}
+
+// ════════════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const [stats, commerciaux, activites] = await Promise.all([
+      api('GET', '/api/stats'),
+      api('GET', '/api/commerciaux'),
+      api('GET', '/api/activites')
+    ]);
+    state.stats = stats;
+    state.commerciaux = commerciaux;
+    state.activites = activites;
+    renderDashboard(stats, commerciaux, activites);
+  } catch (e) { toast('Erreur chargement dashboard', 'error'); }
+}
+
+function renderDashboard(stats, commerciaux, activites) {
+  const alertsEl = document.getElementById('dashboard-alerts');
+  if (stats.relancesUrgentes > 0) {
+    alertsEl.innerHTML = `<div class="alert-banner">⚠️ ${stats.relancesUrgentes} relance(s) urgente(s) ce mois — vérifiez la section Activités</div>`;
+  } else alertsEl.innerHTML = '';
+
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">🌳</div><div class="stat-label">Prospects actifs</div><div class="stat-val green">${stats.prospectsActifs}</div><div class="stat-delta">Hors gagnés et perdus</div></div>
+    <div class="stat-card"><div class="stat-icon">🪓</div><div class="stat-label">Chantiers en cours</div><div class="stat-val">${stats.chantiersEnCours}</div><div class="stat-delta">Démarrage + en cours + finalisation</div></div>
+    <div class="stat-card"><div class="stat-icon">💶</div><div class="stat-label">CA du mois</div><div class="stat-val green">${fmt(stats.caMois)}</div><div class="stat-delta">Devis acceptés ce mois</div></div>
+    <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-label">Devis en attente</div><div class="stat-val amber">${stats.devisAttente}</div><div class="stat-delta">Envoyés, réponse en attente</div></div>
+    <div class="stat-card"><div class="stat-icon">🔔</div><div class="stat-label">Relances urgentes</div><div class="stat-val ${stats.relancesUrgentes > 0 ? 'red' : ''}">${stats.relancesUrgentes}</div><div class="stat-delta">Ce mois en cours</div></div>
+    <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-label">Taux conversion</div><div class="stat-val">${stats.tauxConversion}%</div><div class="stat-delta">Prospects → Gagnés</div></div>
+  `;
+
+  // Chart CA
+  const ca6 = stats.ca6Mois || [];
+  const maxCA = Math.max(...ca6.map(m => m.ca), 1);
+  document.getElementById('chart-bars').innerHTML = ca6.map(m => `
+    <div class="chart-bar-wrap">
+      <div class="chart-bar-col">
+        <div class="chart-bar" style="height:${Math.max(8, (m.ca/maxCA)*100)}%" title="${fmt(m.ca)}"></div>
+      </div>
+      <div class="chart-bar-label">${m.mois}</div>
+      <div class="chart-bar-val">${m.ca > 0 ? (m.ca/1000).toFixed(0)+'k' : '–'}</div>
+    </div>
+  `).join('');
+
+  // Objectifs
+  const objHTML = commerciaux.map(c => {
+    const pct = c.objectif_mensuel_eur ? Math.min(100, Math.round((c.caMois / c.objectif_mensuel_eur) * 100)) : 0;
+    const cls = pct >= 100 ? '' : pct >= 60 ? 'amber' : 'red';
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:600">${c.prenom} ${c.nom}</span>
+        <span style="font-size:12px;color:var(--text-muted)">${fmt(c.caMois)} / ${fmt(c.objectif_mensuel_eur)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${pct}% de l'objectif</div>
+    </div>`;
+  }).join('');
+  document.getElementById('objectifs-list').innerHTML = objHTML;
+
+  // Recent activity
+  const recent = activites.slice(0, 8);
+  document.getElementById('recent-list').innerHTML = recent.length ? recent.map(a => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="navigateTo('activites')">
+      <div style="font-size:16px;width:28px;text-align:center">${typeIcon(a.type)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.titre}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${a.prospects?.nom || ''} • ${commercialName(a.commerciaux)}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);flex-shrink:0">${fmtShort(a.date_action)}</div>
+    </div>
+  `).join('') : '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Aucune activité</div></div>';
+}
+
+// ════════════════════════════════════════════════════════════
+// PROSPECTS
+// ════════════════════════════════════════════════════════════
+async function loadProspects() {
+  try {
+    const [prospects, commerciaux] = await Promise.all([
+      api('GET', '/api/prospects'),
+      state.commerciaux.length ? Promise.resolve(state.commerciaux) : api('GET', '/api/commerciaux')
+    ]);
+    state.prospects = prospects;
+    state.commerciaux = commerciaux;
+    populateCommercialFilters();
+    populateDeptFilter();
+    renderProspectsTable();
+    updateBadge('prospects', prospects.filter(p => !['gagné','perdu'].includes(p.statut)).length);
+  } catch (e) { toast('Erreur chargement prospects', 'error'); }
+}
+
+function populateCommercialFilters() {
+  ['f-commercial','fa-commercial'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = `<option value="">Tous commerciaux</option>` +
+      state.commerciaux.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+    sel.value = current;
+  });
+}
+
+function populateDeptFilter() {
+  const sel = document.getElementById('f-dept');
+  if (!sel) return;
+  const depts = [...new Set(state.prospects.map(p => p.departement).filter(Boolean))].sort();
+  sel.innerHTML = `<option value="">Tous dépts</option>` + depts.map(d => `<option>${d}</option>`).join('');
+}
+
+function filterProspects() { renderProspectsTable(); }
+
+function getFilteredProspects() {
+  const statut = document.getElementById('f-statut')?.value || '';
+  const type = document.getElementById('f-type')?.value || '';
+  const commercial = document.getElementById('f-commercial')?.value || '';
+  const dept = document.getElementById('f-dept')?.value || '';
+  const q = state.searchQuery;
+  return state.prospects.filter(p => {
+    if (statut && p.statut !== statut) return false;
+    if (type && p.type !== type) return false;
+    if (commercial && p.commercial_id !== commercial) return false;
+    if (dept && p.departement !== dept) return false;
+    if (q && !`${p.nom} ${p.contact_nom} ${p.departement} ${p.region}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function sortTable(entity, field) {
+  if (state.sort.field === field) state.sort.asc = !state.sort.asc;
+  else { state.sort.field = field; state.sort.asc = true; }
+  if (entity === 'prospects') renderProspectsTable();
+}
+
+function renderProspectsTable() {
+  let data = getFilteredProspects();
+  const { field, asc } = state.sort;
+  data.sort((a, b) => {
+    const va = a[field] ?? '', vb = b[field] ?? '';
+    return asc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+  document.getElementById('prospects-count').textContent = `${data.length} prospect(s)`;
+  document.getElementById('prospects-tbody').innerHTML = data.length ? data.map(p => {
+    const comm = p.commerciaux || state.commerciaux.find(c => c.id === p.commercial_id);
+    return `<tr onclick="openProspectDrawer('${p.id}')">
+      <td><div class="td-name">${p.nom}</div><div class="td-muted">${p.contact_nom || ''}</div></td>
+      <td>${p.type || '–'}</td>
+      <td>${p.departement || '–'}</td>
+      <td>${p.surface_ha ? p.surface_ha + ' ha' : '–'}</td>
+      <td>${statutBadge(p.statut)}</td>
+      <td>${stars(p.score || 0)}</td>
+      <td>${comm ? comm.prenom + ' ' + comm.nom : '–'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🌳</div><div class="empty-title">Aucun prospect trouvé</div><div class="empty-sub">Ajustez les filtres ou ajoutez un nouveau prospect.</div></div></td></tr>`;
+}
+
+function openProspectDrawer(id) {
+  const p = state.prospects.find(x => x.id === id);
+  if (!p) return;
+  const comm = p.commerciaux || state.commerciaux.find(c => c.id === p.commercial_id);
+  const activites = state.activites.filter(a => a.prospect_id === id).slice(0, 5);
+  const devis = state.devis.filter(d => d.prospect_id === id);
+
+  const body = `
+    <div class="detail-section">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="font-size:32px">🌳</div>
+        <div>
+          <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:700">${p.nom}</div>
+          <div style="font-size:13px;color:var(--text-muted)">${p.type} • ${p.region}</div>
+        </div>
+        ${statutBadge(p.statut)}
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-item-label">Contact</div><div class="detail-item-val">${p.contact_nom || '–'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Département</div><div class="detail-item-val">${p.departement || '–'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Téléphone</div><div class="detail-item-val">${p.tel || '–'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Email</div><div class="detail-item-val" style="font-size:12px">${p.email || '–'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Surface</div><div class="detail-item-val">${p.surface_ha ? p.surface_ha + ' ha' : '–'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Score</div><div class="detail-item-val">${stars(p.score || 0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Source</div><div class="detail-item-val">${p.source || '–'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Commercial</div><div class="detail-item-val">${comm ? comm.prenom + ' ' + comm.nom : '–'}</div></div>
+      </div>
+    </div>
+    ${p.notes ? `<div class="detail-section"><div class="detail-section-title">Notes</div><div style="font-size:13px;color:var(--text-muted);line-height:1.6;background:var(--bg3);padding:12px;border-radius:8px;border:1px solid var(--border)">${p.notes}</div></div>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">Changer le statut</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${['à_contacter','qualifié','devis_envoyé','négociation','gagné','perdu'].map(s =>
+          `<button class="btn btn-sm ${p.statut === s ? 'btn-primary' : 'btn-outline'}" onclick="changeStatut('${id}','${s}')">${s}</button>`
+        ).join('')}
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Activités récentes</div>
+      ${activites.length ? `<div class="timeline">${activites.map(a => `
+        <div class="timeline-item">
+          <div class="timeline-side">
+            <div class="timeline-dot ${a.type}">${typeIcon(a.type)}</div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div class="timeline-title">${a.titre}</div>
+              <div class="timeline-date">${fmtShort(a.date_action)}</div>
+            </div>
+            <div class="timeline-desc">${a.description || ''}</div>
+          </div>
+        </div>`).join('')}</div>` : '<div style="font-size:13px;color:var(--text-muted)">Aucune activité enregistrée.</div>'}
+    </div>
+    ${devis.length ? `<div class="detail-section">
+      <div class="detail-section-title">Devis</div>
+      ${devis.map(d => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:8px;margin-bottom:6px;border:1px solid var(--border)">
+        <div><div style="font-weight:600;font-size:13px">${fmt(d.montant_ht)}</div><div style="font-size:11px;color:var(--text-muted)">${fmtDate(d.date_envoi)}</div></div>
+        ${statutBadge(d.statut)}
+      </div>`).join('')}
+    </div>` : ''}
+  `;
+  const footer = `
+    <button class="btn btn-outline" onclick="callProspect('${p.tel}')">📞 Appeler</button>
+    <button class="btn btn-outline" onclick="emailProspect('${p.email}')">📧 Email</button>
+    <button class="btn btn-primary" onclick="closeDrawer();openNewActiviteDrawer('${id}')">+ Activité</button>
+  `;
+  openDrawer(p.nom, body, footer);
+}
+
+async function changeStatut(id, statut) {
+  try {
+    await api('PATCH', `/api/prospects/${id}`, { statut });
+    const p = state.prospects.find(x => x.id === id);
+    if (p) p.statut = statut;
+    toast(`Statut mis à jour : ${statut}`, 'success');
+    openProspectDrawer(id);
+    renderProspectsTable();
+  } catch (e) { toast('Erreur mise à jour statut', 'error'); }
+}
+
+function callProspect(tel) { if (tel) window.open(`tel:${tel}`); else toast('Numéro non renseigné', 'info'); }
+function emailProspect(email) { if (email) window.open(`mailto:${email}`); else toast('Email non renseigné', 'info'); }
+
+function openNewProspectDrawer() {
+  const commOpts = state.commerciaux.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  openDrawer('Nouveau prospect', `
+    <form id="form-prospect" onsubmit="submitProspect(event)">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nom *</label><input class="form-input" name="nom" required placeholder="Nom du prospect"></div>
+        <div class="form-group"><label class="form-label">Type *</label><select class="form-input" name="type" required><option value="">Sélectionner</option><option>privé</option><option>GFA</option><option>ONF</option><option>collectivité</option><option>SCI</option><option>coopérative</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Région</label><input class="form-input" name="region" placeholder="Ex: Nouvelle-Aquitaine"></div>
+        <div class="form-group"><label class="form-label">Département</label><input class="form-input" name="departement" placeholder="Ex: Dordogne"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Surface (ha)</label><input class="form-input" name="surface_ha" type="number" placeholder="120"></div>
+        <div class="form-group"><label class="form-label">Score (1-5)</label><input class="form-input" name="score" type="number" min="1" max="5" placeholder="3"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Contact</label><input class="form-input" name="contact_nom" placeholder="Nom du contact"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" name="tel" placeholder="06 00 00 00 00"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" name="email" type="email" placeholder="contact@exemple.fr"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Commercial</label><select class="form-input" name="commercial_id">${commOpts}</select></div>
+        <div class="form-group"><label class="form-label">Source</label><input class="form-input" name="source" placeholder="Recommandation, salon…"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-input form-textarea" name="notes" placeholder="Informations complémentaires…"></textarea></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Créer le prospect</button>
+    </form>
+  `);
+}
+
+async function submitProspect(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd.entries());
+  body.statut = 'à_contacter';
+  body.surface_ha = body.surface_ha ? Number(body.surface_ha) : null;
+  body.score = body.score ? Number(body.score) : null;
+  try {
+    const p = await api('POST', '/api/prospects', body);
+    state.prospects.unshift(p);
+    toast('Prospect créé avec succès', 'success');
+    closeDrawer();
+    renderProspectsTable();
+  } catch (err) { toast('Erreur création prospect', 'error'); }
+}
+
+// ════════════════════════════════════════════════════════════
+// PIPELINE
+// ════════════════════════════════════════════════════════════
+async function loadPipeline() {
+  try {
+    const [pipeline, prospects] = await Promise.all([
+      api('GET', '/api/pipeline'),
+      state.prospects.length ? Promise.resolve(state.prospects) : api('GET', '/api/prospects')
+    ]);
+    state.pipeline = pipeline;
+    if (!state.prospects.length) state.prospects = prospects;
+    renderKanban(pipeline);
+  } catch (e) { toast('Erreur chargement pipeline', 'error'); }
+}
+
+const colLabels = {
+  'à_contacter': 'À contacter',
+  'qualifié': 'Qualifié',
+  'devis_envoyé': 'Devis envoyé',
+  'négociation': 'Négociation',
+};
+
+function renderKanban(pipeline) {
+  const board = document.getElementById('kanban-board');
+  board.innerHTML = '';
+  Object.entries(colLabels).forEach(([key, label]) => {
+    const cards = pipeline[key] || [];
+    const total = cards.reduce((s, p) => s + (p.surface_ha ? p.surface_ha * 300 : 0), 0);
+    const col = document.createElement('div');
+    col.className = 'kanban-col';
+    col.dataset.col = key;
+    col.innerHTML = `
+      <div class="kanban-header">
+        <div class="kanban-col-title">${label}</div>
+        <div class="kanban-meta">
+          <span class="kanban-count">${cards.length}</span>
+          ${total > 0 ? `<span class="kanban-ca">${fmt(total)}</span>` : ''}
+        </div>
+      </div>
+      <div class="kanban-cards" id="col-${key}">
+        ${cards.map(p => kanbanCard(p)).join('')}
+        <div class="kanban-drop-zone" data-col="${key}"><span class="kanban-drop-zone-text">Déposer ici</span></div>
+      </div>
+    `;
+    board.appendChild(col);
+  });
+
+  setupDragDrop();
+}
+
+function kanbanCard(p) {
+  const comm = p.commerciaux || state.commerciaux.find(c => c.id === p.commercial_id);
+  return `<div class="kanban-card" draggable="true" data-id="${p.id}" onclick="openProspectDrawer('${p.id}')">
+    <div class="kanban-card-name">${p.nom}</div>
+    <div class="kanban-card-meta">
+      ${p.type ? `<span>${p.type}</span>` : ''}
+      ${p.surface_ha ? `<span>${p.surface_ha} ha</span>` : ''}
+      ${p.departement ? `<span>${p.departement}</span>` : ''}
+    </div>
+    <div class="kanban-card-bottom">
+      <div class="kanban-card-score">${[1,2,3,4,5].map(i=>`<span class="kanban-star ${i<=(p.score||0)?'active':''}">★</span>`).join('')}</div>
+      ${comm ? `<span style="font-size:11px;color:var(--text-muted)">${comm.prenom} ${comm.nom}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+function setupDragDrop() {
+  let dragging = null;
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragging = card;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      dragging = null;
+      document.querySelectorAll('.kanban-drop-zone').forEach(z => z.classList.remove('drag-over'));
+    });
+    card.addEventListener('click', e => {
+      if (card.classList.contains('dragging')) e.stopPropagation();
+    });
+  });
+
+  document.querySelectorAll('.kanban-drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', async e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      if (!dragging) return;
+      const id = dragging.dataset.id;
+      const newStatut = zone.dataset.col;
+      try {
+        await api('PATCH', `/api/prospects/${id}`, { statut: newStatut });
+        const p = state.prospects.find(x => x.id === id);
+        if (p) p.statut = newStatut;
+        toast(`Déplacé vers "${colLabels[newStatut]}"`, 'success');
+        loadPipeline();
+      } catch (err) { toast('Erreur mise à jour pipeline', 'error'); }
+    });
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// CHANTIERS
+// ════════════════════════════════════════════════════════════
+async function loadChantiers() {
+  try {
+    const chantiers = await api('GET', '/api/chantiers');
+    state.chantiers = chantiers;
+    renderChantiersMap(chantiers);
+    renderChantiersTable();
+    updateBadge('chantiers', chantiers.filter(c => ['démarrage','en_cours','finalisation','retard'].includes(c.statut)).length);
+  } catch (e) { toast('Erreur chargement chantiers', 'error'); }
+}
+
+function filterChantiers() { renderChantiersTable(); }
+
+function getFilteredChantiers() {
+  const statut = document.getElementById('fc-statut')?.value || '';
+  const q = state.searchQuery;
+  return state.chantiers.filter(c => {
+    if (statut && c.statut !== statut) return false;
+    if (q && !`${c.nom} ${c.chef_chantier} ${c.prospects?.nom || ''}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderChantiersTable() {
+  const data = getFilteredChantiers();
+  document.getElementById('chantiers-count').textContent = `${data.length} chantier(s)`;
+  document.getElementById('chantiers-tbody').innerHTML = data.length ? data.map(c => {
+    const pct = c.avancement_pct || 0;
+    const barCls = c.statut === 'retard' ? 'red' : c.statut === 'démarrage' ? 'amber' : '';
+    return `<tr onclick="openChantierDrawer('${c.id}')">
+      <td><div class="td-name">${c.nom}</div><div class="td-muted">${c.prospects?.nom || ''}</div></td>
+      <td>${c.type?.replace('_',' ') || '–'}</td>
+      <td>${c.surface_ha ? c.surface_ha + ' ha' : '–'}</td>
+      <td style="font-weight:600;color:var(--green-vivid)">${fmt(c.montant_ht)}</td>
+      <td>${statutBadge(c.statut)}</td>
+      <td style="min-width:120px">
+        <div class="progress-row">
+          <div class="progress-bar"><div class="progress-fill ${barCls}" style="width:${pct}%"></div></div>
+          <span class="progress-pct">${pct}%</span>
+        </div>
+      </td>
+      <td>${fmtShort(c.date_fin_prevue)}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🪓</div><div class="empty-title">Aucun chantier</div><div class="empty-sub">Créez votre premier chantier pour commencer le suivi terrain.</div></div></td></tr>`;
+}
+
+function renderChantiersMap(chantiers) {
+  const statColor = { en_cours: '#8ddf8d', finalisation: '#8ddf8d', démarrage: '#d4a847', retard: '#c45c5c', planifié: '#7a9a7a', terminé: '#7a9a7a' };
+  const positions = [
+    [320,180],[180,320],[420,240],[200,160],[350,290],
+    [260,350],[440,180],[160,250],[300,130],[480,300],
+    [370,360],[220,290],[150,190],[410,310],[270,220]
+  ];
+  const dots = chantiers.slice(0,15).map((c, i) => {
+    const [x, y] = positions[i] || [300 + Math.random()*200, 200 + Math.random()*200];
+    const col = statColor[c.statut] || '#7a9a7a';
+    return `<circle cx="${x}" cy="${y}" r="8" fill="${col}" opacity="0.85" style="cursor:pointer" onclick="openChantierDrawer('${c.id}')">
+      <title>${c.nom} — ${c.statut}</title>
+    </circle>
+    <text x="${x}" y="${y+20}" text-anchor="middle" font-size="9" fill="#7a9a7a" font-family="DM Sans">${c.prospects?.departement || ''}</text>`;
+  }).join('');
+  document.getElementById('map-svg-wrap').innerHTML = `
+    <svg viewBox="0 0 640 480" style="width:100%;height:220px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
+      <text x="320" y="240" text-anchor="middle" font-size="40" fill="rgba(74,124,74,0.1)" font-family="Syne" font-weight="700">FRANCE</text>
+      <path d="M120,80 Q200,60 280,70 Q360,80 420,60 Q480,40 540,80 Q580,120 560,180 Q540,240 520,300 Q500,360 460,400 Q420,440 360,460 Q300,480 240,460 Q180,440 140,400 Q100,360 100,300 Q80,240 100,180 Q110,120 120,80Z" fill="none" stroke="rgba(74,124,74,0.3)" stroke-width="1.5"/>
+      ${dots}
+    </svg>
+  `;
+}
+
+function openChantierDrawer(id) {
+  const c = state.chantiers.find(x => x.id === id);
+  if (!c) return;
+  const pct = c.avancement_pct || 0;
+  const barCls = c.statut === 'retard' ? 'red' : c.statut === 'démarrage' ? 'amber' : '';
+  openDrawer(c.nom, `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div style="font-size:32px">🪓</div>
+      <div style="flex:1">
+        <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:700">${c.nom}</div>
+        <div style="font-size:13px;color:var(--text-muted)">${c.type?.replace(/_/g,' ')} • ${c.prospects?.nom || ''}</div>
+      </div>
+      ${statutBadge(c.statut)}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Avancement</div>
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:13px;color:var(--text-muted)">Progression</span>
+          <span style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--green-vivid)">${pct}%</span>
+        </div>
+        <div class="progress-bar" style="height:10px"><div class="progress-fill ${barCls}" style="width:${pct}%"></div></div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-item-label">Surface</div><div class="detail-item-val">${c.surface_ha || '–'} ha</div></div>
+        <div class="detail-item"><div class="detail-item-label">Montant HT</div><div class="detail-item-val" style="color:var(--green-vivid)">${fmt(c.montant_ht)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Début</div><div class="detail-item-val">${fmtDate(c.date_debut)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Fin prévue</div><div class="detail-item-val">${fmtDate(c.date_fin_prevue)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Chef chantier</div><div class="detail-item-val">${c.chef_chantier || '–'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Engins</div><div class="detail-item-val" style="font-size:12px">${c.engins || '–'}</div></div>
+      </div>
+    </div>
+    ${c.notes ? `<div class="detail-section"><div class="detail-section-title">Notes terrain</div><div style="font-size:13px;color:var(--text-muted);line-height:1.6;background:var(--bg3);padding:12px;border-radius:8px;border:1px solid var(--border)">${c.notes}</div></div>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">Mettre à jour l'avancement</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="range" id="avancement-range" min="0" max="100" value="${pct}" style="flex:1;accent-color:var(--green-vivid)" oninput="document.getElementById('avancement-val').textContent=this.value+'%'">
+        <span id="avancement-val" style="font-weight:700;color:var(--green-vivid);min-width:40px">${pct}%</span>
+        <button class="btn btn-primary btn-sm" onclick="updateAvancement('${id}')">Enregistrer</button>
+      </div>
+    </div>
+  `);
+}
+
+async function updateAvancement(id) {
+  const pct = Number(document.getElementById('avancement-range').value);
+  try {
+    await api('PATCH', `/api/chantiers/${id}`, { avancement_pct: pct });
+    const c = state.chantiers.find(x => x.id === id);
+    if (c) c.avancement_pct = pct;
+    toast('Avancement mis à jour', 'success');
+    renderChantiersTable();
+    openChantierDrawer(id);
+  } catch (e) { toast('Erreur mise à jour', 'error'); }
+}
+
+function openNewChantierDrawer() {
+  const prospectOpts = state.prospects.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+  openDrawer('Nouveau chantier', `
+    <form id="form-chantier" onsubmit="submitChantier(event)">
+      <div class="form-group"><label class="form-label">Nom du chantier *</label><input class="form-input" name="nom" required placeholder="Ex: Coupe rase secteur A"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prospect *</label><select class="form-input" name="prospect_id" required><option value="">Sélectionner</option>${prospectOpts}</select></div>
+        <div class="form-group"><label class="form-label">Type *</label><select class="form-input" name="type" required><option value="">Sélectionner</option><option>coupe_rase</option><option>coupe_sélective</option><option>débardage</option><option>reboisement</option><option>éclaircie</option><option>entretien</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Surface (ha)</label><input class="form-input" name="surface_ha" type="number" placeholder="50"></div>
+        <div class="form-group"><label class="form-label">Montant HT (€)</label><input class="form-input" name="montant_ht" type="number" placeholder="35000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date début</label><input class="form-input" name="date_debut" type="date"></div>
+        <div class="form-group"><label class="form-label">Date fin prévue</label><input class="form-input" name="date_fin_prevue" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Chef de chantier</label><input class="form-input" name="chef_chantier" placeholder="Nom du chef"></div>
+      <div class="form-group"><label class="form-label">Engins</label><input class="form-input" name="engins" placeholder="Ex: Abatteuse Ponsse, Débardeur"></div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-input form-textarea" name="notes" placeholder="Notes terrain…"></textarea></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Créer le chantier</button>
+    </form>
+  `);
+}
+
+async function submitChantier(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd.entries());
+  body.statut = 'planifié';
+  body.avancement_pct = 0;
+  body.surface_ha = body.surface_ha ? Number(body.surface_ha) : null;
+  body.montant_ht = body.montant_ht ? Number(body.montant_ht) : null;
+  try {
+    const c = await api('POST', '/api/chantiers', body);
+    state.chantiers.unshift(c);
+    toast('Chantier créé', 'success');
+    closeDrawer();
+    renderChantiersTable();
+  } catch (err) { toast('Erreur création chantier', 'error'); }
+}
+
+// ════════════════════════════════════════════════════════════
+// ACTIVITÉS
+// ════════════════════════════════════════════════════════════
+async function loadActivites() {
+  try {
+    const [activites, commerciaux] = await Promise.all([
+      api('GET', '/api/activites'),
+      state.commerciaux.length ? Promise.resolve(state.commerciaux) : api('GET', '/api/commerciaux')
+    ]);
+    state.activites = activites;
+    state.commerciaux = commerciaux;
+    populateCommercialFilters();
+    renderActivitesTimeline();
+  } catch (e) { toast('Erreur chargement activités', 'error'); }
+}
+
+function filterActivites() { renderActivitesTimeline(); }
+
+function renderActivitesTimeline() {
+  const type = document.getElementById('fa-type')?.value || '';
+  const commercial = document.getElementById('fa-commercial')?.value || '';
+  const q = state.searchQuery;
+  let data = state.activites.filter(a => {
+    if (type && a.type !== type) return false;
+    if (commercial && a.commercial_id !== commercial) return false;
+    if (q && !`${a.titre} ${a.description} ${a.prospects?.nom || ''}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const el = document.getElementById('activites-timeline');
+  el.innerHTML = data.length ? data.map(a => {
+    const comm = a.commerciaux || state.commerciaux.find(c => c.id === a.commercial_id);
+    return `<div class="timeline-item">
+      <div class="timeline-side">
+        <div class="timeline-dot ${a.type}">${typeIcon(a.type)}</div>
+        <div class="timeline-line"></div>
+      </div>
+      <div class="timeline-content">
+        <div class="timeline-header">
+          <div class="timeline-title">${a.titre}</div>
+          <div class="timeline-date">${fmtDate(a.date_action)}</div>
+        </div>
+        ${a.description ? `<div class="timeline-desc">${a.description}</div>` : ''}
+        <div class="timeline-meta">
+          ${a.prospects?.nom ? `<span class="badge badge-muted" style="font-size:10px">🌳 ${a.prospects.nom}</span>` : ''}
+          ${comm ? `<span class="badge badge-muted" style="font-size:10px">👤 ${comm.prenom} ${comm.nom}</span>` : ''}
+          ${a.statut_apres ? `<span class="badge badge-muted" style="font-size:10px">→ ${a.statut_apres}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Aucune activité</div><div class="empty-sub">Ajustez les filtres ou ajoutez une nouvelle activité.</div></div>`;
+}
+
+function openNewActiviteDrawer(preProspectId) {
+  const commOpts = state.commerciaux.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  const prospectOpts = state.prospects.map(p => `<option value="${p.id}" ${p.id === preProspectId ? 'selected' : ''}>${p.nom}</option>`).join('');
+  openDrawer('Nouvelle activité', `
+    <form id="form-activite" onsubmit="submitActivite(event)">
+      <div class="form-group"><label class="form-label">Titre *</label><input class="form-input" name="titre" required placeholder="Résumé de l'action"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Type *</label><select class="form-input" name="type" required><option value="">Sélectionner</option><option>appel</option><option>email</option><option>visite</option><option>devis</option><option>contrat</option><option>relance</option><option>note</option></select></div>
+        <div class="form-group"><label class="form-label">Date *</label><input class="form-input" name="date_action" type="date" required value="${new Date().toISOString().slice(0,10)}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prospect</label><select class="form-input" name="prospect_id"><option value="">Sélectionner</option>${prospectOpts}</select></div>
+        <div class="form-group"><label class="form-label">Commercial</label><select class="form-input" name="commercial_id"><option value="">Sélectionner</option>${commOpts}</select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-input form-textarea" name="description" placeholder="Détail de l'action…"></textarea></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Enregistrer l'activité</button>
+    </form>
+  `);
+}
+
+async function submitActivite(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd.entries());
+  Object.keys(body).forEach(k => { if (!body[k]) delete body[k]; });
+  try {
+    const a = await api('POST', '/api/activites', body);
+    state.activites.unshift(a);
+    toast('Activité enregistrée', 'success');
+    closeDrawer();
+    renderActivitesTimeline();
+  } catch (err) { toast('Erreur enregistrement', 'error'); }
+}
+
+// ════════════════════════════════════════════════════════════
+// ÉQUIPE
+// ════════════════════════════════════════════════════════════
+async function loadEquipe() {
+  try {
+    const commerciaux = await api('GET', '/api/commerciaux');
+    state.commerciaux = commerciaux;
+    renderEquipe(commerciaux);
+  } catch (e) { toast('Erreur chargement équipe', 'error'); }
+}
+
+function renderEquipe(commerciaux) {
+  const sorted = [...commerciaux].sort((a, b) => b.caMois - a.caMois);
+
+  // Podium
+  const podiumOrder = [sorted[1], sorted[0], sorted[2]].filter(Boolean);
+  const podiumHeights = [80, 110, 60];
+  const podiumRanks = ['🥈', '🥇', '🥉'];
+  document.getElementById('podium').innerHTML = podiumOrder.map((c, i) => {
+    const pct = c.objectif_mensuel_eur ? Math.min(100, Math.round(c.caMois / c.objectif_mensuel_eur * 100)) : 0;
+    const bgColor = avatarColor(c.avatar_initiales || 'XX');
+    return `<div class="podium-item">
+      <div class="podium-rank">${podiumRanks[i]}</div>
+      <div class="podium-bar" style="height:${podiumHeights[i]}px;width:60px;background:${bgColor}22;border-color:${bgColor}55;display:flex;align-items:center;justify-content:center">
+        <div style="width:40px;height:40px;border-radius:50%;background:${bgColor};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-family:Syne,sans-serif">${c.avatar_initiales}</div>
+      </div>
+      <div class="podium-name">${c.prenom} ${c.nom}</div>
+      <div class="podium-val">${fmt(c.caMois)}</div>
+    </div>`;
+  }).join('');
+
+  // Cards
+  document.getElementById('team-grid').innerHTML = commerciaux.map(c => {
+    const pct = c.objectif_mensuel_eur ? Math.min(100, Math.round(c.caMois / c.objectif_mensuel_eur * 100)) : 0;
+    const bgColor = avatarColor(c.avatar_initiales || 'XX');
+    const barCls = pct >= 100 ? '' : pct >= 60 ? 'amber' : 'red';
+    return `<div class="team-card" onclick="openCommercialDrawer('${c.id}')">
+      <div class="team-card-header">
+        <div class="team-avatar" style="background:${bgColor}">${c.avatar_initiales}</div>
+        <div>
+          <div class="team-name">${c.prenom} ${c.nom}</div>
+          <div class="team-region">📍 ${c.region}</div>
+        </div>
+      </div>
+      <div class="team-stats">
+        <div class="team-stat"><div class="team-stat-val">${c.nbProspects || 0}</div><div class="team-stat-label">Prospects</div></div>
+        <div class="team-stat"><div class="team-stat-val">${c.nbContrats || 0}</div><div class="team-stat-label">Contrats</div></div>
+        <div class="team-stat"><div class="team-stat-val" style="font-size:14px;color:var(--green-vivid)">${fmt(c.caMois)}</div><div class="team-stat-label">CA mois</div></div>
+      </div>
+      <div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+          <span style="color:var(--text-muted)">Objectif mensuel</span>
+          <span style="color:var(--${pct>=100?'green-vivid':pct>=60?'amber':'red'})">${pct}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill ${barCls}" style="width:${pct}%"></div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted)">Objectif : ${fmt(c.objectif_mensuel_eur)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openCommercialDrawer(id) {
+  const c = state.commerciaux.find(x => x.id === id);
+  if (!c) return;
+  const pct = c.objectif_mensuel_eur ? Math.min(100, Math.round(c.caMois / c.objectif_mensuel_eur * 100)) : 0;
+  const bgColor = avatarColor(c.avatar_initiales || 'XX');
+  const barCls = pct >= 100 ? '' : pct >= 60 ? 'amber' : 'red';
+  const activites = state.activites.filter(a => a.commercial_id === id).slice(0, 6);
+  openDrawer(c.prenom + ' ' + c.nom, `
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:72px;height:72px;border-radius:50%;background:${bgColor};display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:24px;font-weight:700;color:#fff;margin:0 auto 12px">
+        ${c.avatar_initiales}
+      </div>
+      <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:700">${c.prenom} ${c.nom}</div>
+      <div style="font-size:13px;color:var(--text-muted)">📍 ${c.region}</div>
+    </div>
+    <div class="detail-grid" style="margin-bottom:20px">
+      <div class="detail-item"><div class="detail-item-label">Email</div><div class="detail-item-val" style="font-size:12px">${c.email || '–'}</div></div>
+      <div class="detail-item"><div class="detail-item-label">Téléphone</div><div class="detail-item-val">${c.tel || '–'}</div></div>
+      <div class="detail-item"><div class="detail-item-label">Prospects</div><div class="detail-item-val" style="color:var(--green-vivid)">${c.nbProspects}</div></div>
+      <div class="detail-item"><div class="detail-item-label">Contrats</div><div class="detail-item-val">${c.nbContrats}</div></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Objectif mensuel</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px">
+        <span style="color:var(--text-muted)">Réalisé</span>
+        <span style="font-weight:700">${fmt(c.caMois)} / ${fmt(c.objectif_mensuel_eur)}</span>
+      </div>
+      <div class="progress-bar" style="height:10px"><div class="progress-fill ${barCls}" style="width:${pct}%"></div></div>
+      <div style="font-size:12px;margin-top:6px;text-align:right;color:var(--${pct>=100?'green-vivid':pct>=60?'amber':'red'})">${pct}% atteint</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Activités récentes</div>
+      ${activites.length ? `<div class="timeline">${activites.map(a => `
+        <div class="timeline-item">
+          <div class="timeline-side">
+            <div class="timeline-dot ${a.type}">${typeIcon(a.type)}</div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div class="timeline-title">${a.titre}</div>
+              <div class="timeline-date">${fmtShort(a.date_action)}</div>
+            </div>
+            <div class="timeline-desc">${a.prospects?.nom || ''}</div>
+          </div>
+        </div>`).join('')}</div>` : '<div style="font-size:13px;color:var(--text-muted)">Aucune activité récente.</div>'}
+    </div>
+  `);
+}
+
+// ════════════════════════════════════════════════════════════
+// BADGES
+// ════════════════════════════════════════════════════════════
+function updateBadge(section, count) {
+  const el = document.getElementById(`badge-${section}`);
+  if (el) el.textContent = count;
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+async function init() {
+  await loadDashboard();
+  // Preload data for badges
+  try {
+    const [prospects, chantiers, devis] = await Promise.all([
+      api('GET', '/api/prospects'),
+      api('GET', '/api/chantiers'),
+      api('GET', '/api/devis')
+    ]);
+    state.prospects = prospects;
+    state.chantiers = chantiers;
+    state.devis = devis;
+    updateBadge('prospects', prospects.filter(p => !['gagné','perdu'].includes(p.statut)).length);
+    updateBadge('chantiers', chantiers.filter(c => ['démarrage','en_cours','finalisation','retard'].includes(c.statut)).length);
+  } catch (e) {}
+}
+
+init();
+</script>
+</body>
+</html>
