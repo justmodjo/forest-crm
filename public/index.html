@@ -673,7 +673,7 @@ function typeIcon(t) {
 function commercialName(c) {
   if (!c) return '–';
   if (typeof c === 'object') return c.prenom + ' ' + c.nom;
-  const found = state.commerciaux.find(x => x.id === c);
+  const found = state.commerciaux.find(x => String(x.id) === String(c));
   return found ? found.prenom + ' ' + found.nom : '–';
 }
 
@@ -926,11 +926,11 @@ function renderProspectsTable() {
 }
 
 function openProspectDrawer(id) {
-  const p = state.prospects.find(x => x.id === id);
+  const p = state.prospects.find(x => String(x.id) === String(id));
   if (!p) return;
   const comm = p.commerciaux || state.commerciaux.find(c => c.id === p.commercial_id);
-  const activites = state.activites.filter(a => a.prospect_id === id).slice(0, 5);
-  const devis = state.devis.filter(d => d.prospect_id === id);
+  const activites = state.activites.filter(a => String(a.prospect_id) === String(id)).slice(0, 5);
+  const devis = state.devis.filter(d => String(d.prospect_id) === String(id));
 
   const body = `
     <div class="detail-section">
@@ -998,7 +998,7 @@ function openProspectDrawer(id) {
 async function changeStatut(id, statut) {
   try {
     await api('PATCH', `/api/prospects/${id}`, { statut });
-    const p = state.prospects.find(x => x.id === id);
+    const p = state.prospects.find(x => String(x.id) === String(id));
     if (p) p.statut = statut;
     toast(`Statut mis à jour : ${statut}`, 'success');
     openProspectDrawer(id);
@@ -1151,7 +1151,7 @@ function setupDragDrop() {
       const newStatut = zone.dataset.col;
       try {
         await api('PATCH', `/api/prospects/${id}`, { statut: newStatut });
-        const p = state.prospects.find(x => x.id === id);
+        const p = state.prospects.find(x => String(x.id) === String(id));
         if (p) p.statut = newStatut;
         toast(`Déplacé vers "${colLabels[newStatut]}"`, 'success');
         loadPipeline();
@@ -1233,7 +1233,7 @@ function renderChantiersMap(chantiers) {
 }
 
 function openChantierDrawer(id) {
-  const c = state.chantiers.find(x => x.id === id);
+  const c = state.chantiers.find(x => String(x.id) === String(id));
   if (!c) return;
   const pct = c.avancement_pct || 0;
   const barCls = c.statut === 'retard' ? 'red' : c.statut === 'démarrage' ? 'amber' : '';
@@ -1280,7 +1280,7 @@ async function updateAvancement(id) {
   const pct = Number(document.getElementById('avancement-range').value);
   try {
     await api('PATCH', `/api/chantiers/${id}`, { avancement_pct: pct });
-    const c = state.chantiers.find(x => x.id === id);
+    const c = state.chantiers.find(x => String(x.id) === String(id));
     if (c) c.avancement_pct = pct;
     toast('Avancement mis à jour', 'success');
     renderChantiersTable();
@@ -1479,12 +1479,12 @@ function renderEquipe(commerciaux) {
 }
 
 function openCommercialDrawer(id) {
-  const c = state.commerciaux.find(x => x.id === id);
+  const c = state.commerciaux.find(x => String(x.id) === String(id));
   if (!c) return;
   const pct = c.objectif_mensuel_eur ? Math.min(100, Math.round(c.caMois / c.objectif_mensuel_eur * 100)) : 0;
   const bgColor = avatarColor(c.avatar_initiales || 'XX');
   const barCls = pct >= 100 ? '' : pct >= 60 ? 'amber' : 'red';
-  const activites = state.activites.filter(a => a.commercial_id === id).slice(0, 6);
+  const activites = state.activites.filter(a => String(a.commercial_id) === String(id)).slice(0, 6);
   openDrawer(c.prenom + ' ' + c.nom, `
     <div style="text-align:center;margin-bottom:24px">
       <div style="width:72px;height:72px;border-radius:50%;background:${bgColor};display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:24px;font-weight:700;color:#fff;margin:0 auto 12px">
