@@ -22,6 +22,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+
+// Airtable currency fields can arrive as "$12,000" (text) or 12000 (number).
+function parseMontant(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') return v;
+  const n = parseFloat(String(v).replace(/[$,\s]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
 // ── RAW AIRTABLE FETCH ────────────────────────────────────────────────────────
 
 async function getAll(table) {
@@ -144,7 +154,7 @@ function fromChantier(r) {
     nom:            f['Nom'] || '',
     type:           f['Type'] || '',
     surface_ha:     f['Surface_ha'] || null,
-    montant_ht:     f['Montant_HT'] || null,
+    montant_ht:     parseMontant(f['Montant_HT']),
     statut:         CHANTIER_STATUT_FROM_AT[f['Statut']] || 'planifié',
     date_debut:     f['Date_début'] || null,
     date_fin_prevue:f['Date_fin'] || null,
@@ -181,7 +191,7 @@ function fromDevis(r) {
     id:           r.id,
     prospect_id:  linkedId(f['Prospect lié']),
     commercial_id:null,
-    montant_ht:   f['Montant_HT'] || null,
+    montant_ht:   parseMontant(f['Montant_HT']),
     statut:       normaliseDevisStatut(f['Statut']),
     date_envoi:   f['Date_envoi'] || null,
     date_validite:null,
