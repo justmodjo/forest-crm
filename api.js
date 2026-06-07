@@ -7,6 +7,14 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+if (!process.env.AIRTABLE_TOKEN || !process.env.AIRTABLE_BASE_ID) {
+  console.error('FATAL — variables manquantes:',
+    !process.env.AIRTABLE_TOKEN ? 'AIRTABLE_TOKEN ' : '',
+    !process.env.AIRTABLE_BASE_ID ? 'AIRTABLE_BASE_ID' : ''
+  );
+  process.exit(1);
+}
+
 const base = new Airtable({ apiKey: process.env.AIRTABLE_TOKEN })
   .base(process.env.AIRTABLE_BASE_ID);
 
@@ -250,13 +258,24 @@ function toDevis(body) {
 }
 
 // ── STATS ─────────────────────────────────────────────────────────────────────
-app.get('/api/stats', async (req, res) => {
+async function fetchTable(name) {
   try {
-    const [rawP, rawD, rawA, rawC] = await Promise.all([
-      getAll('Prospects'), getAll('Devis'), getAll('Activités'), getAll('Chantiers'),
-    ]);
+    const rows = await getAll(name);
+    console.log(`[stats] ${name}: ${rows.length} lignes OK`);
+    return rows;
+  } catch (err) {
+    console.error(`[stats] ERREUR table "${name}": ${err.message} (status: ${err.statusCode || 'N/A'})`);
+    throw new Error(`Airtable table "${name}" inaccessible: ${err.message}`);
+  }
+}
 
-    console.log('[stats] Airtable rows — Prospects:', rawP.length, '| Devis:', rawD.length, '| Activités:', rawA.length, '| Chantiers:', rawC.length);
+app.get('/api/stats', async (req, res) => {
+  console.log('[stats] requête reçue');
+  try {
+    const rawP = await fetchTable('Prospects');
+    const rawD = await fetchTable('Devis');
+    const rawA = await fetchTable('Activités');
+    const rawC = await fetchTable('Chantiers');
 
     const prospects = rawP.map(fromProspect);
     const devis     = rawD.map(fromDevis);
@@ -290,10 +309,10 @@ app.get('/api/stats', async (req, res) => {
     });
 
     const result = { prospectsActifs, chantiersEnCours, caMois, devisAttente, relancesUrgentes, tauxConversion, ca6Mois };
-    console.log('[stats] résultat:', JSON.stringify({ prospectsActifs, chantiersEnCours, caMois, devisAttente, relancesUrgentes, tauxConversion }));
+    console.log('[stats] OK:', JSON.stringify({ prospectsActifs, chantiersEnCours, caMois, devisAttente, relancesUrgentes, tauxConversion }));
     res.json(result);
   } catch (err) {
-    console.error('[stats] ERREUR:', err.message);
+    console.error('[stats] ÉCHEC:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
