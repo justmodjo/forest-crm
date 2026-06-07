@@ -255,10 +255,17 @@ app.get('/api/stats', async (req, res) => {
     const [rawP, rawD, rawA, rawC] = await Promise.all([
       getAll('Prospects'), getAll('Devis'), getAll('Activités'), getAll('Chantiers'),
     ]);
+
+    console.log('[stats] Airtable rows — Prospects:', rawP.length, '| Devis:', rawD.length, '| Activités:', rawA.length, '| Chantiers:', rawC.length);
+
     const prospects = rawP.map(fromProspect);
     const devis     = rawD.map(fromDevis);
     const activites = rawA.map(fromActivite);
     const chantiers = rawC.map(fromChantier);
+
+    console.log('[stats] statuts prospects:', [...new Set(prospects.map(p => p.statut))]);
+    console.log('[stats] statuts chantiers:', [...new Set(chantiers.map(c => c.statut))]);
+    console.log('[stats] statuts devis:',     [...new Set(devis.map(d => d.statut))]);
 
     const now = new Date();
     const som = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -282,8 +289,11 @@ app.get('/api/stats', async (req, res) => {
       return { mois: start.toLocaleDateString('fr-FR', { month: 'short' }), ca };
     });
 
-    res.json({ prospectsActifs, chantiersEnCours, caMois, devisAttente, relancesUrgentes, tauxConversion, ca6Mois });
+    const result = { prospectsActifs, chantiersEnCours, caMois, devisAttente, relancesUrgentes, tauxConversion, ca6Mois };
+    console.log('[stats] résultat:', JSON.stringify({ prospectsActifs, chantiersEnCours, caMois, devisAttente, relancesUrgentes, tauxConversion }));
+    res.json(result);
   } catch (err) {
+    console.error('[stats] ERREUR:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -506,5 +516,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`ForestCRM → http://localhost:${PORT}`);
-  console.log(`Airtable base: ${process.env.AIRTABLE_BASE_ID}`);
+  console.log(`AIRTABLE_TOKEN  : ${process.env.AIRTABLE_TOKEN  ? '✓ défini (' + process.env.AIRTABLE_TOKEN.slice(0,8) + '…)' : '✗ MANQUANT'}`);
+  console.log(`AIRTABLE_BASE_ID: ${process.env.AIRTABLE_BASE_ID ? '✓ ' + process.env.AIRTABLE_BASE_ID : '✗ MANQUANT'}`);
 });
