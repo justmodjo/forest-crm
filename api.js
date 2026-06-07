@@ -117,7 +117,7 @@ const ACTIVITE_TYPE_TO_AT = {
 function normaliseDevisStatut(s) {
   if (!s) return 'brouillon';
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return 'envoyé'; // datetime → envoyé
-  const m = { 'En attente': 'envoyé', 'Accepté': 'accepté', 'Validé': 'accepté', 'validé': 'accepté', 'Refusé': 'refusé', 'Brouillon': 'brouillon' };
+  const m = { 'En attente': 'envoyé', 'Accepté': 'accepté', 'accepté': 'accepté', 'Validé': 'accepté', 'validé': 'accepté', 'Refusé': 'refusé', 'refusé': 'refusé', 'Brouillon': 'brouillon' };
   return m[s] || 'envoyé';
 }
 
